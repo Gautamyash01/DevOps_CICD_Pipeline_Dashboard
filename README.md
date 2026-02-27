@@ -1,6 +1,6 @@
 # DevOps CI/CD Pipeline Dashboard
 
-A simple web-based dashboard that simulates CI/CD pipeline operations for educational purposes. This project is designed as a college-level web programming assignment to help students understand DevOps concepts through visualization.
+An interactive web-based dashboard that visually simulates CI/CD pipeline workflows to help students understand modern DevOps practices in a practical way. This project is designed as a college-level web programming assignment to help students understand DevOps concepts through visualization.
 
 ## Project Objective
 
