@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CI/CD Monitoring Dashboard</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600&display=swap"
+    rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+
+  <!-- App Script -->
+  <script src="script.js" type="module" defer></script>
+</head>
+
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar__header">
+        <button class="sidebar__toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+          <span class="sidebar__toggle-line"></span>
+          <span class="sidebar__toggle-line"></span>
+        </button>
+        <div class="sidebar__brand">
+          <span class="sidebar__brand-logo">⚙️</span>
+          <span class="sidebar__brand-text">DevOps OpsCenter</span>
+        </div>
+      </div>
+
+      <nav class="sidebar__nav">
+        <a href="#" class="sidebar__link sidebar__link--active">
+          <span class="sidebar__icon">📊</span>
+          <span class="sidebar__text">Dashboard</span>
+        </a>
+        <a href="#" class="sidebar__link">
+          <span class="sidebar__icon">🧬</span>
+          <span class="sidebar__text">Pipelines</span>
+        </a>
+        <a href="#" class="sidebar__link">
+          <span class="sidebar__icon">🏗️</span>
+          <span class="sidebar__text">Builds</span>
+        </a>
+        <a href="#" class="sidebar__link">
+          <span class="sidebar__icon">🚀</span>
+          <span class="sidebar__text">Deployments</span>
+        </a>
+        <a href="#" class="sidebar__link">
+          <span class="sidebar__icon">⚙️</span>
+          <span class="sidebar__text">Settings</span>
+        </a>
+      </nav>
+
+      <div class="sidebar__footer">
+        <div class="sidebar__env">
+          <span class="sidebar__env-dot sidebar__env-dot--prod"></span>
+          <span class="sidebar__env-text">Production</span>
+        </div>
+        <div class="sidebar__env">
+          <span class="sidebar__env-dot sidebar__env-dot--staging"></span>
+          <span class="sidebar__env-text">Staging</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main layout -->
+    <div class="layout">
+      <!-- Top Navbar -->
+      <header class="topbar">
+        <div class="topbar__left">
+          <h1 class="topbar__title">CI/CD Monitoring Dashboard</h1>
+          <span class="topbar__subtitle">Live observability for your pipelines</span>
+        </div>
+
+        <div class="topbar__right">
+          <div class="topbar__search">
+            <span class="topbar__search-icon">🔍</span>
+            <input type="text" id="buildSearch" placeholder="Search builds, pipelines, users..." />
+          </div>
+
+          <div class="topbar__divider"></div>
+
+          <div class="topbar__profile">
+            <div class="topbar__profile-info">
+              <span class="topbar__profile-name">Yash Raj</span>
+              <span class="topbar__profile-role">DevOps Engineer</span>
+            </div>
+            <div class="topbar__avatar">
+              <span class="topbar__avatar-initials">YR</span>
+              <span class="topbar__avatar-status"></span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <main class="content">
+        <!-- Controls row -->
+        <section class="toolbar">
+          <div class="toolbar__left">
+            <label class="field">
+              <span class="field__label">Pipeline</span>
+              <select id="pipelineFilter" class="field__control">
+                <option value="all">All Pipelines</option>
+              </select>
+            </label>
+            <label class="field">
+              <span class="field__label">Environment</span>
+              <select id="envFilter" class="field__control">
+                <option value="all">All</option>
+                <option value="prod">Production</option>
+                <option value="staging">Staging</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="toolbar__right">
+            <div class="toolbar__status-dot toolbar__status-dot--green"></div>
+            <span class="toolbar__status-text">Event stream active · Updating every 5s</span>
+          </div>
+        </section>
+
+        <!-- Summary cards -->
+        <section class="grid grid--summary">
+          <article class="card card--summary" data-summary="total-builds">
+            <div class="card__header">
+              <h2 class="card__title">Total Builds</h2>
+            </div>
+            <div class="card__body">
+              <span class="card__metric" id="totalBuildsCount">0</span>
+              <span class="card__metric-sub">Last 24 hours</span>
+            </div>
+          </article>
+
+          <article class="card card--summary card--success" data-summary="successful-builds">
+            <div class="card__header">
+              <h2 class="card__title">Successful Builds</h2>
+            </div>
+            <div class="card__body">
+              <span class="card__metric" id="successfulBuildsCount">0</span>
+              <span class="card__metric-sub">
+                <span class="badge badge--success-soft">Green</span> status
+              </span>
+            </div>
+          </article>
+
+          <article class="card card--summary card--danger" data-summary="failed-builds">
+            <div class="card__header">
+              <h2 class="card__title">Failed Builds</h2>
+            </div>
+            <div class="card__body">
+              <span class="card__metric" id="failedBuildsCount">0</span>
+              <span class="card__metric-sub">
+                <span class="badge badge--danger-soft">Red</span> status
+              </span>
+            </div>
+          </article>
+
+          <article class="card card--summary card--info" data-summary="deployment-rate">
+            <div class="card__header">
+              <h2 class="card__title">Deployment Success Rate</h2>
+            </div>
+            <div class="card__body">
+              <span class="card__metric" id="deploymentRate">0%</span>
+              <span class="card__metric-sub" id="deploymentRateSubtitle">0 / 0 deployments</span>
+            </div>
+          </article>
+        </section>
+
+        <!-- Charts -->
+        <section class="grid grid--charts">
+          <article class="card card--chart">
+            <div class="card__header card__header--tight">
+              <h2 class="card__title">Build History</h2>
+              <span class="card__pill">Line · Success vs Failure</span>
+            </div>
+            <div class="card__body card__body--chart">
+              <canvas id="buildHistoryChart"></canvas>
+            </div>
+          </article>
+
+          <article class="card card--chart">
+            <div class="card__header card__header--tight">
+              <h2 class="card__title">Deployment Outcomes</h2>
+              <span class="card__pill">Pie · Success vs Failure</span>
+            </div>
+            <div class="card__body card__body--chart">
+              <canvas id="deploymentPieChart"></canvas>
+            </div>
+          </article>
+
+          <article class="card card--chart card--wide">
+            <div class="card__header card__header--tight">
+              <h2 class="card__title">Builds per Pipeline</h2>
+              <span class="card__pill">Bar · Volume by pipeline</span>
+            </div>
+            <div class="card__body card__body--chart">
+              <canvas id="buildsPerPipelineChart"></canvas>
+            </div>
+          </article>
+        </section>
+
+        <!-- Recent builds -->
+        <section class="card card--table">
+          <div class="card__header card__header--table">
+            <div>
+              <h2 class="card__title">Recent Builds</h2>
+              <span class="card__subtitle">Live stream of latest CI events</span>
+            </div>
+            <div class="card__header-actions">
+              <span class="legend">
+                <span class="legend__item">
+                  <span class="legend__dot legend__dot--green"></span>Success
+                </span>
+                <span class="legend__item">
+                  <span class="legend__dot legend__dot--yellow"></span>Running
+                </span>
+                <span class="legend__item">
+                  <span class="legend__dot legend__dot--red"></span>Failed
+                </span>
+              </span>
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="table" id="buildsTable">
+              <thead>
+                <tr>
+                  <th>Build ID</th>
+                  <th>Pipeline</th>
+                  <th>Triggered By</th>
+                  <th>Status</th>
+                  <th>Duration</th>
+                  <th>Timestamp</th>
+                </tr>
+              </thead>
+              <tbody id="buildsTableBody">
+                <!-- Populated via JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevOps CI/CD Pipeline Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>DevOps CI/CD Pipeline Dashboard</h1>
+            <p>A simple simulation dashboard for learning CI/CD concepts</p>
+        </header>
+
+        <!-- Main Dashboard Content -->
+        <main>
+            <!-- Status Cards Section -->
+            <section class="status-cards">
+                <div class="card">
+                    <h3>Latest Build Status</h3>
+                    <div id="build-status" class="status-indicator">No Data</div>
+                </div>
+                
+                <div class="card">
+                    <h3>Latest Deployment Status</h3>
+                    <div id="deployment-status" class="status-indicator">No Data</div>
+                </div>
+                
+                <div class="card">
+                    <h3>Total Pipeline Runs</h3>
+                    <div id="total-runs" class="metric">0</div>
+                </div>
+                
+                <div class="card">
+                    <h3>Deployment Success Rate</h3>
+                    <div id="success-rate" class="metric">0%</div>
+                </div>
+            </section>
+
+            <!-- Control Section -->
+            <section class="control-section">
+                <button id="trigger-pipeline" class="trigger-btn">Trigger Pipeline</button>
+                <p id="pipeline-message" class="message"></p>
+            </section>
+
+            <!-- Pipeline History Table -->
+            <section class="history-section">
+                <h2>Pipeline History</h2>
+                <div class="table-container">
+                    <table id="history-table">
+                        <thead>
+                            <tr>
+                                <th>Build #</th>
+                                <th>Build Status</th>
+                                <th>Deployment Status</th>
+                                <th>Date/Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-tbody">
+                            <!-- History rows will be added here dynamically -->
+                        </tbody>
+                    </table>
+                    <div id="no-history" class="no-data">
+                        No pipeline runs yet. Click "Trigger Pipeline" to start.
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer>
+            <p>DevOps CI/CD Pipeline Dashboard - College Project</p>
+        </footer>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>
