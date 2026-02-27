@@ -171,3 +171,6 @@ This project is open source and available for educational purposes. Feel free to
 ---
 
 **Note**: This is a simulation project for educational purposes only. It does not implement actual CI/CD functionality or integrate with real DevOps tools.
+## Contributors
+- Yash Raj
+- Sharanya Vasandani
