@@ -80,6 +80,14 @@ function randomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+// Debounce utility to optimize rapid input events
+function debounce(fn, delay = 300) {
+  let timeoutId;
+  return function (...args) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
 // Zero pad numbers
 function pad(num, length = 4) {
   return String(num).padStart(length, "0");
@@ -629,7 +637,7 @@ function attachEventListeners() {
   el.sidebarToggle.addEventListener("click", onSidebarToggle);
   el.pipelineFilter.addEventListener("change", onPipelineFilterChange);
   el.envFilter.addEventListener("change", onEnvFilterChange);
-  el.buildSearch.addEventListener("input", onSearchInput);
+  el.buildSearch.addEventListener("input", debounce(onSearchInput, 300));
 }
 
 function startRealtimeSimulation() {
