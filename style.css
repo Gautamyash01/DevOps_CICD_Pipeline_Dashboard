@@ -706,6 +706,8 @@ body::before {
   padding: 2px 7px;
   border-radius: var(--radius-pill);
   font-size: 11px;
+  letter-spacing: 0.05em;
+  font-weight: 500;
   border: 1px solid transparent;
 }
 
