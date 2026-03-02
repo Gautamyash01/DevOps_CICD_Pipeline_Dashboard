@@ -645,10 +645,10 @@ function startRealtimeSimulation() {
     const newBuild = generateRandomBuild();
     builds.push(newBuild);
 
-    // Limit memory
-    if (builds.length > MAX_BUILDS) {
-      builds = builds.slice(builds.length - MAX_BUILDS);
-    }
+   // Limit memory efficiently without recreating array
+while (builds.length > MAX_BUILDS) {
+  builds.shift();
+}
 
     renderSummary();
     updateCharts();
