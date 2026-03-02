@@ -367,6 +367,11 @@ body::before {
   box-shadow: 0 0 0 1px rgba(15, 23, 42, 1), 0 12px 30px rgba(15, 23, 42, 0.9);
 }
 
+.topbar__search:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
+}
+
 .topbar__search-icon {
   font-size: 12px;
 }
