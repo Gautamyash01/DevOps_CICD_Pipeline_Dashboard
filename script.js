@@ -419,6 +419,7 @@ function initCharts() {
   const historyCtx = document.getElementById("buildHistoryChart").getContext("2d");
   const pieCtx = document.getElementById("deploymentPieChart").getContext("2d");
   const barCtx = document.getElementById("buildsPerPipelineChart").getContext("2d");
+  const baseConfig = makeBaseChartConfig();
 
   const { labels, successCounts, failCounts } = computeBuildHistorySeries(20);
   const { success: depSuccess, failed: depFailed } = computeDeploymentOutcomes();
@@ -451,8 +452,8 @@ function initCharts() {
         }
       ]
     },
-    options: {
-      ...makeBaseChartConfig(),
+   options: {
+  ...baseConfig,
       interaction: {
         intersect: false,
         mode: "index"
@@ -504,9 +505,9 @@ function initCharts() {
       ]
     },
     options: {
-      ...makeBaseChartConfig(),
-      plugins: {
-        ...makeBaseChartConfig().plugins,
+  ...baseConfig,
+  plugins: {
+    ...baseConfig.plugins,
         legend: { display: false }
       }
     }
@@ -672,4 +673,3 @@ if (document.readyState === "loading") {
 } else {
   init();
 }
-
