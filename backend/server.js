@@ -1,13 +1,23 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const connectDB = require('./config/db');
 
 // Load environment variables
 dotenv.config();
 
-// Connect to database
-connectDB();
+// Check if MongoDB is available
+let connectDB;
+let Pipeline, Build, Deployment;
+
+try {
+  connectDB = require('./config/db');
+  Pipeline = require('./models/Pipeline');
+  Build = require('./models/Build');
+  Deployment = require('./models/Deployment');
+  console.log('MongoDB models loaded successfully');
+} catch (error) {
+  console.log('MongoDB not available, using in-memory data');
+}
 
 const app = express();
 

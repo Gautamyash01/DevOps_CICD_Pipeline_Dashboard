@@ -90,9 +90,12 @@ The main objective of this project is to create an interactive dashboard that:
    
    # For production
    npm start
+   
+   # Or use the simple server (works without MongoDB)
+   node server-simple.js
    ```
    
-   The backend server will run on **http://localhost:5000**
+   The backend server will run on **http://localhost:5001**
 
 5. **Start Frontend**
    In a new terminal, navigate to the project root:
@@ -109,8 +112,8 @@ The main objective of this project is to create an interactive dashboard that:
 6. **Access the Dashboard**
    Open your browser and navigate to:
    - Frontend: **http://localhost:8000**
-   - Backend API: **http://localhost:5000** (for API testing)
-   - Health Check: **http://localhost:5000/health**
+   - Backend API: **http://localhost:5001** (for API testing)
+   - Health Check: **http://localhost:5001/health**
 
 ## Usage Instructions
 
@@ -264,8 +267,10 @@ This project helps students understand:
 Create a `.env` file in the backend directory:
 ```env
 MONGODB_URI=mongodb://localhost:27017/devops-dashboard
-PORT=5000
+PORT=5001
 ```
+
+**Note**: If MongoDB is not available, use `server-simple.js` which works with in-memory data.
 
 ### Available Scripts
 
