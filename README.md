@@ -56,7 +56,55 @@ The main objective of this project is to create an interactive dashboard that:
 - **npm** (comes with Node.js)
 - Any modern web browser (Chrome, Firefox, Safari, Edge)
 
-### Steps to Run
+### MongoDB Installation (macOS)
+
+If MongoDB is not installed on your macOS system:
+
+```bash
+# Download MongoDB Community Server for macOS ARM64
+cd /tmp
+curl -O https://fastdl.mongodb.org/osx/mongodb-macos-arm64-7.0.5.tgz
+
+# Extract and install
+tar -xzf mongodb-macos-arm64-7.0.5.tgz
+sudo cp -R mongodb-macos-aarch64-7.0.5 /usr/local/mongodb
+
+# Create necessary directories
+sudo mkdir -p /usr/local/var/mongodb
+sudo mkdir -p /usr/local/var/log/mongodb
+
+# Set ownership
+sudo chown -R $USER /usr/local/var/mongodb
+sudo chown -R $USER /usr/local/var/log/mongodb
+
+# Add to PATH
+echo 'export PATH="/usr/local/mongodb/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+
+# Start MongoDB server
+mongod --dbpath /usr/local/var/mongodb --logpath /usr/local/var/log/mongodb/mongo.log --fork
+```
+
+### Quick Start (Recommended)
+
+Use the automated startup script:
+
+```bash
+# Clone and navigate to project
+git clone <repository-url>
+cd DevOps_CICD_Pipeline_Dashboard_Project
+
+# Run the full-stack startup script
+./start-full-stack.sh
+```
+
+This script will:
+- ✅ Check and start MongoDB if needed
+- ✅ Start the backend server with MongoDB
+- ✅ Start the frontend development server
+- ✅ Provide all URLs and status information
+
+### Manual Setup
 
 1. **Download/Clone the Project**
    ```bash
@@ -65,16 +113,9 @@ The main objective of this project is to create an interactive dashboard that:
    ```
 
 2. **Start MongoDB**
-   Make sure MongoDB is running on your system:
    ```bash
-   # On macOS with Homebrew
-   brew services start mongodb-community
-   
-   # On Windows
-   net start MongoDB
-   
-   # On Linux
-   sudo systemctl start mongod
+   export PATH="/usr/local/mongodb/bin:$PATH"
+   mongod --dbpath /usr/local/var/mongodb --logpath /usr/local/var/log/mongodb/mongo.log --fork
    ```
 
 3. **Setup Backend**
@@ -91,11 +132,11 @@ The main objective of this project is to create an interactive dashboard that:
    # For production
    npm start
    
-   # Or use the simple server (works without MongoDB)
-   node server-simple.js
+   # Or use MongoDB server directly
+   node server-mongodb.js
    ```
    
-   The backend server will run on **http://localhost:5001**
+   The backend server will run on **http://localhost:5002**
 
 5. **Start Frontend**
    In a new terminal, navigate to the project root:
@@ -112,8 +153,8 @@ The main objective of this project is to create an interactive dashboard that:
 6. **Access the Dashboard**
    Open your browser and navigate to:
    - Frontend: **http://localhost:8000**
-   - Backend API: **http://localhost:5001** (for API testing)
-   - Health Check: **http://localhost:5001/health**
+   - Backend API: **http://localhost:5002** (for API testing)
+   - Health Check: **http://localhost:5002/health**
 
 ## Usage Instructions
 
@@ -267,10 +308,10 @@ This project helps students understand:
 Create a `.env` file in the backend directory:
 ```env
 MONGODB_URI=mongodb://localhost:27017/devops-dashboard
-PORT=5001
+PORT=5002
 ```
 
-**Note**: If MongoDB is not available, use `server-simple.js` which works with in-memory data.
+**Note**: MongoDB is now fully installed and configured. The project uses real MongoDB database for data persistence.
 
 ### Available Scripts
 
@@ -290,10 +331,31 @@ python3 -m http.server 8000
 npx http-server 8000
 ```
 
+### Quick Start Commands
+
+```bash
+# Start everything with one command
+./start-full-stack.sh
+
+# Or start services individually
+export PATH="/usr/local/mongodb/bin:$PATH"
+mongod --dbpath /usr/local/var/mongodb --logpath /usr/local/var/log/mongodb/mongo.log --fork
+cd backend && node server-mongodb.js &
+cd .. && python3 -m http.server 8000
+```
+
 ### Monitoring
-- Backend logs show CI/CD simulation activity
-- Check browser console for frontend API calls
-- MongoDB Compass can be used to view database data
+- **Backend logs**: Show CI/CD simulation activity and database operations
+- **Frontend browser console**: Shows API calls and any frontend errors
+- **MongoDB logs**: Located at `/usr/local/var/log/mongodb/mongo.log`
+- **Database inspection**: Use MongoDB Compass or `mongosh` to view data
+
+### Server Status
+- **MongoDB**: Running on port 27017
+- **Backend API**: Running on port 5002
+- **Frontend**: Running on port 8000
+- **CI/CD Simulation**: Active (creates new builds every 10 seconds)
+- **Dashboard Auto-refresh**: Active (updates every 5 seconds)
 
 ## Troubleshooting
 
