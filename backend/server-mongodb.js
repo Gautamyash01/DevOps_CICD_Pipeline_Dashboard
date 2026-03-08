@@ -32,6 +32,33 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// Root endpoint - API information
+app.get('/', (req, res) => {
+  res.json({
+    message: 'DevOps CI/CD Dashboard API',
+    version: '1.0.0',
+    status: 'Running',
+    endpoints: {
+        pipelines: '/api/pipelines',
+        builds: '/api/builds',
+        builds_recent: '/api/builds/recent',
+        deployments: '/api/deployments',
+        metrics: '/api/metrics/dashboard',
+        health: '/health'
+    },
+    urls: {
+        dashboard: 'http://localhost:8000',
+        api_base: 'http://localhost:5002/api',
+        health_check: 'http://localhost:5002/health'
+    },
+    database: {
+        status: 'Connected',
+        type: 'MongoDB',
+        name: 'devops-dashboard'
+    }
+  });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
