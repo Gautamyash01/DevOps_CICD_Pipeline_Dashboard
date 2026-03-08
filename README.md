@@ -1,65 +1,116 @@
 # DevOps CI/CD Pipeline Dashboard
 
-An interactive web-based dashboard that visually simulates CI/CD pipeline workflows to help students understand modern DevOps practices in a practical way. This project is designed as a college-level web programming assignment to help students understand DevOps concepts through visualization.
+A full-stack interactive web-based dashboard that monitors real CI/CD pipeline workflows. This project demonstrates modern DevOps practices with a Node.js backend, MongoDB database, and real-time frontend visualization.
 
 ## Project Objective
 
 The main objective of this project is to create an interactive dashboard that:
-- Simulates CI/CD pipeline runs
+- Monitors real CI/CD pipeline runs
 - Displays real-time pipeline status and metrics
-- Maintains a history of pipeline executions
+- Maintains persistent history of pipeline executions
 - Provides a hands-on learning experience for DevOps concepts
+- Demonstrates full-stack web development with real-time data
 
 ## Technologies Used
 
+### Frontend
 - **HTML5**: Semantic markup for the dashboard structure
 - **CSS3**: Modern styling with Grid, Flexbox, and responsive design
-- **JavaScript (ES6+)**: Interactive functionality and data management
-- **LocalStorage**: Browser-based data persistence
-- **No external dependencies**: Pure frontend implementation
+- **JavaScript (ES6+)**: Interactive functionality and real-time data fetching
+- **Chart.js**: Data visualization for build history and metrics
+
+### Backend
+- **Node.js**: JavaScript runtime environment
+- **Express.js**: Web framework for REST API
+- **MongoDB**: NoSQL database for data persistence
+- **Mongoose**: MongoDB object modeling for Node.js
+- **CORS**: Cross-origin resource sharing
 
 ## Features
 
 ### Dashboard Components
 1. **Status Cards**: Display latest build status, deployment status, total runs, and success rate
-2. **Pipeline Trigger**: Button to simulate new CI/CD pipeline runs
+2. **Real-time Charts**: Build history, deployment outcomes, and builds per pipeline
 3. **History Table**: Complete log of all pipeline executions with timestamps
 4. **Responsive Design**: Works on desktop, tablet, and mobile devices
+5. **Auto-refresh**: Dashboard updates every 5 seconds with latest data
+
+### Backend Features
+- RESTful API endpoints for pipelines, builds, deployments, and metrics
+- Background CI/CD simulation process (generates new builds every 10 seconds)
+- MongoDB data persistence with proper relationships
+- Real-time metrics calculation and aggregation
+- CORS-enabled API for frontend integration
 
 ### Simulation Logic
-- Random build results (80% success rate)
-- Random deployment results (75% success rate)
-- Persistent data storage using browser localStorage
-- Real-time dashboard updates
+- Realistic build results (65% success, 20% running, 15% failure)
+- Automatic deployment generation for successful builds
+- Multiple environments (dev, staging, production)
+- Various trigger sources (GitHub Actions, Jenkins, etc.)
 
 ## How to Run the Project
 
 ### Prerequisites
+- **Node.js** (version 14 or higher)
+- **MongoDB** (installed and running locally)
+- **npm** (comes with Node.js)
 - Any modern web browser (Chrome, Firefox, Safari, Edge)
-- No additional software or installations required
 
 ### Steps to Run
 
 1. **Download/Clone the Project**
    ```bash
    git clone <repository-url>
-   cd devops-cicd-dashboard
+   cd DevOps_CICD_Pipeline_Dashboard_Project
    ```
 
-2. **Open the Dashboard**
-   - Simply open `index.html` in your web browser
-   - Or use a local development server:
-     ```bash
-     # Using Python
-     python -m http.server 8000
-     
-     # Using Node.js (if you have http-server installed)
-     npx http-server
-     ```
+2. **Start MongoDB**
+   Make sure MongoDB is running on your system:
+   ```bash
+   # On macOS with Homebrew
+   brew services start mongodb-community
+   
+   # On Windows
+   net start MongoDB
+   
+   # On Linux
+   sudo systemctl start mongod
+   ```
 
-3. **Access the Dashboard**
-   - Navigate to `http://localhost:8000` (if using a server)
-   - Or directly open the `index.html` file
+3. **Setup Backend**
+   ```bash
+   cd backend
+   npm install
+   ```
+
+4. **Start Backend Server**
+   ```bash
+   # For development (with auto-restart)
+   npm run dev
+   
+   # For production
+   npm start
+   ```
+   
+   The backend server will run on **http://localhost:5000**
+
+5. **Start Frontend**
+   In a new terminal, navigate to the project root:
+   ```bash
+   cd ..  # Back to project root
+   
+   # Using Python 3
+   python3 -m http.server 8000
+   
+   # Or using Node.js (if you have http-server)
+   npx http-server 8000
+   ```
+
+6. **Access the Dashboard**
+   Open your browser and navigate to:
+   - Frontend: **http://localhost:8000**
+   - Backend API: **http://localhost:5000** (for API testing)
+   - Health Check: **http://localhost:5000/health**
 
 ## Usage Instructions
 
@@ -72,19 +123,111 @@ The main objective of this project is to create an interactive dashboard that:
 ## Project Structure
 
 ```
-devops-cicd-dashboard/
-├── index.html          # Main dashboard HTML structure
-├── style.css           # CSS styling and responsive design
-├── script.js           # JavaScript functionality and simulation logic
-└── README.md           # Project documentation (this file)
+DevOps_CICD_Pipeline_Dashboard_Project/
+├── backend/                    # Node.js backend API
+│   ├── config/
+│   │   └── db.js              # MongoDB connection configuration
+│   ├── models/
+│   │   ├── Pipeline.js        # Pipeline data model
+│   │   ├── Build.js           # Build data model
+│   │   └── Deployment.js      # Deployment data model
+│   ├── controllers/
+│   │   ├── pipelineController.js
+│   │   ├── buildController.js
+│   │   ├── deploymentController.js
+│   │   └── metricsController.js
+│   ├── routes/
+│   │   ├── pipelineRoutes.js
+│   │   ├── buildRoutes.js
+│   │   ├── deploymentRoutes.js
+│   │   └── metricsRoutes.js
+│   ├── server.js              # Main Express server
+│   ├── package.json           # Backend dependencies
+│   └── .env                   # Environment variables
+├── index.html                 # Main dashboard HTML structure
+├── style.css                  # CSS styling and responsive design
+├── script.js                  # JavaScript functionality and API integration
+└── README.md                  # Project documentation (this file)
+```
+
+## API Endpoints
+
+### Pipelines
+- `GET /api/pipelines` - Get all pipelines
+- `POST /api/pipelines` - Create a new pipeline
+
+### Builds
+- `GET /api/builds` - Get all builds
+- `GET /api/builds/recent` - Get recent builds (limited)
+- `POST /api/builds` - Create a new build
+
+### Deployments
+- `GET /api/deployments` - Get all deployments
+- `POST /api/deployments` - Create a new deployment
+
+### Metrics
+- `GET /api/metrics/dashboard` - Get dashboard metrics including:
+  - Total builds
+  - Successful builds
+  - Failed builds
+  - Deployment success rate
+  - Recent builds data
+  - Charts data
+
+### System
+- `GET /health` - Health check endpoint
+
+## Database Models
+
+### Pipeline
+```javascript
+{
+  name: String (required),
+  repository: String (required),
+  createdAt: Date (default: Date.now)
+}
+```
+
+### Build
+```javascript
+{
+  pipelineId: ObjectId (ref: Pipeline),
+  status: String (enum: ['success', 'failed', 'running']),
+  triggeredBy: String (required),
+  duration: Number (required),
+  timestamp: Date (default: Date.now)
+}
+```
+
+### Deployment
+```javascript
+{
+  buildId: ObjectId (ref: Build),
+  environment: String (enum: ['dev', 'staging', 'production']),
+  status: String (enum: ['success', 'failed']),
+  deployedAt: Date (default: Date.now)
+}
 ```
 
 ## Code Explanation
 
+### Backend (`server.js`)
+- **Express.js Setup**: REST API with CORS middleware
+- **Database Connection**: MongoDB connection with Mongoose
+- **Background Simulation**: Automatic CI/CD activity generation
+- **Error Handling**: Comprehensive error handling and logging
+
+### Frontend (`script.js`)
+- **API Integration**: Real-time data fetching from backend
+- **Data Transformation**: Converting API data to UI-compatible format
+- **Chart.js Integration**: Dynamic chart updates with real data
+- **Auto-refresh**: 5-second interval updates
+- **Event Handling**: User interaction management
+
 ### HTML Structure (`index.html`)
 - Semantic HTML5 elements for accessibility
 - Responsive grid layout for status cards
-- Table structure for pipeline history
+- Chart containers for data visualization
 - Progressive enhancement approach
 
 ### CSS Styling (`style.css`)
@@ -94,22 +237,19 @@ devops-cicd-dashboard/
 - Color-coded status indicators
 - Mobile-first responsive approach
 
-### JavaScript Logic (`script.js`)
-- **Data Management**: Uses localStorage for persistence
-- **Simulation Logic**: Random generation of build/deployment results
-- **UI Updates**: Real-time dashboard updates
-- **Event Handling**: User interaction management
-- **Utility Functions**: Date formatting, calculations, etc.
-
 ## Learning Outcomes
 
 This project helps students understand:
 - CI/CD pipeline concepts and workflows
-- Frontend web development best practices
-- Data persistence in web applications
+- Full-stack web development with Node.js and Express
+- MongoDB database design and Mongoose ODM
+- RESTful API design and implementation
+- Real-time data visualization with Chart.js
+- Frontend-backend integration and CORS
+- Background processes and data simulation
 - Responsive web design principles
-- Event-driven programming
-- Modern JavaScript features
+- Modern JavaScript features (async/await, fetch API)
+- Error handling and logging best practices
 
 ## Browser Compatibility
 
@@ -118,16 +258,82 @@ This project helps students understand:
 - Safari 12+
 - Edge 79+
 
+## Development
+
+### Environment Variables
+Create a `.env` file in the backend directory:
+```env
+MONGODB_URI=mongodb://localhost:27017/devops-dashboard
+PORT=5000
+```
+
+### Available Scripts
+
+#### Backend
+```bash
+cd backend
+npm run dev      # Start with nodemon (development)
+npm start        # Start production server
+npm test         # Run tests (if added)
+```
+
+#### Frontend
+```bash
+# Start development server
+python3 -m http.server 8000
+# or
+npx http-server 8000
+```
+
+### Monitoring
+- Backend logs show CI/CD simulation activity
+- Check browser console for frontend API calls
+- MongoDB Compass can be used to view database data
+
+## Troubleshooting
+
+### Common Issues
+1. **MongoDB Connection Error**: Ensure MongoDB is running
+2. **CORS Issues**: Backend includes CORS middleware
+3. **Port Conflicts**: Change PORT in .env if needed
+4. **API Not Responding**: Check backend server logs
+5. **Data Not Loading**: Verify API endpoints are accessible
+
+### Reset Data
+To clear all pipeline data:
+```bash
+# Connect to MongoDB and drop the database
+mongo devops-dashboard
+db.dropDatabase()
+```
+
+### Debug Mode
+Enable detailed logging by setting:
+```env
+DEBUG=*
+```
+
 ## Customization Options
 
-### Modify Success Rates
-Edit the probability in `script.js`:
+### Modify Simulation Rates
+Edit the probabilities in `backend/server.js`:
 ```javascript
-// Build success rate (currently 80%)
-return Math.random() < 0.8 ? 'Success' : 'Failure';
+// Build success rate (currently 65%)
+if (random < 0.65) status = 'success';
+else if (random < 0.85) status = 'running';
+else status = 'failed';
 
 // Deployment success rate (currently 75%)
-return Math.random() < 0.75 ? 'Deployed' : 'Failed';
+const deploymentStatus = Math.random() < 0.75 ? 'success' : 'failed';
+```
+
+### Change Update Intervals
+```javascript
+// Backend simulation interval (currently 10 seconds)
+setInterval(simulateCICDActivity, 10000);
+
+// Frontend refresh interval (currently 5 seconds)
+setInterval(updateDashboardData, 5000);
 ```
 
 ### Change Styling
@@ -138,23 +344,15 @@ Modify colors and layouts in `style.css`:
 
 ### Add New Features
 Potential extensions:
-- Export history to CSV
+- Export history to CSV/JSON
 - Add more pipeline stages
-- Implement charts and graphs
-- Add filtering and search functionality
-
-## Troubleshooting
-
-### Common Issues
-1. **Data not persisting**: Ensure localStorage is enabled in your browser
-2. **Styling issues**: Clear browser cache and refresh
-3. **JavaScript errors**: Check browser console for error messages
-
-### Reset Data
-To clear all pipeline data, open browser console and run:
-```javascript
-clearAllData()
-```
+- Implement user authentication
+- Add real-time WebSocket updates
+- Implement advanced filtering and search
+- Add pipeline configuration management
+- Integrate with real CI/CD tools (GitHub Actions, Jenkins)
+- Add alerting and notifications
+- Implement data analytics and reporting
 
 ## Academic Use
 

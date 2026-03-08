@@ -2,9 +2,12 @@
 // Vanilla JS + Chart.js
 
 // -----------------------------
-// Configuration & Mock Data
+// Configuration & API Setup
 // -----------------------------
 
+const API_BASE_URL = 'http://localhost:5000/api';
+
+// Mock data for fallback (kept for reference)
 const PIPELINES = [
   { id: "pipeline-core-api", name: "Core API", env: "prod" },
   { id: "pipeline-web-frontend", name: "Web Frontend", env: "prod" },
@@ -33,11 +36,49 @@ const MAX_BUILDS = 40; // Max rows kept in the table
 const UPDATE_INTERVAL_MS = 5000; // Real-time update interval
 
 // -----------------------------
+// API Functions
+// -----------------------------
+
+async function fetchDashboardMetrics() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/metrics/dashboard`);
+    if (!response.ok) throw new Error('Failed to fetch dashboard metrics');
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching dashboard metrics:', error);
+    return null;
+  }
+}
+
+async function fetchRecentBuilds() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/builds/recent`);
+    if (!response.ok) throw new Error('Failed to fetch recent builds');
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching recent builds:', error);
+    return [];
+  }
+}
+
+async function fetchPipelines() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/pipelines`);
+    if (!response.ok) throw new Error('Failed to fetch pipelines');
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching pipelines:', error);
+    return [];
+  }
+}
+
+// -----------------------------
 // State
 // -----------------------------
 
 /** @type {Array<Build>} */
 let builds = [];
+let pipelines = [];
 
 let filters = {
   pipelineId: "all",
@@ -141,17 +182,39 @@ function animateCounter(el, newValue, durationMs = 600, formatter = v => String(
 }
 
 // -----------------------------
-// Data Generation
+// Data Transformation (for API data)
+// -----------------------------
+
+function transformBuildData(apiBuilds) {
+  return apiBuilds.map(build => ({
+    id: `#${String(build._id).slice(-4).toUpperCase()}`,
+    pipelineId: build.pipelineId?._id || build.pipelineId,
+    pipelineName: build.pipelineId?.name || 'Unknown',
+    env: 'prod', // Default for now, could be enhanced
+    triggeredBy: build.triggeredBy,
+    status: build.status,
+    durationSeconds: build.duration,
+    timestamp: new Date(build.timestamp),
+    isDeployment: Math.random() < 0.4 && build.status !== STATUS.RUNNING
+  }));
+}
+
+function transformPipelineData(apiPipelines) {
+  return apiPipelines.map(pipeline => ({
+    id: pipeline._id,
+    name: pipeline.name,
+    env: 'prod' // Default for now
+  }));
+}
+
+// -----------------------------
+// Legacy Functions (kept for compatibility)
 // -----------------------------
 
 let buildCounter = 1;
 
-/**
- * Generate a random build event
- * @returns {Build}
- */
 function generateRandomBuild() {
-  const pipeline = randomChoice(PIPELINES);
+  const pipeline = randomChoice(pipelines.length > 0 ? pipelines : PIPELINES);
 
   // Biased probabilities: success > running > failed
   const r = Math.random();
@@ -167,9 +230,9 @@ function generateRandomBuild() {
 
   const build = {
     id: `#${pad(buildCounter++, 4)}`,
-    pipelineId: pipeline.id,
+    pipelineId: pipeline.id || pipeline._id,
     pipelineName: pipeline.name,
-    env: pipeline.env,
+    env: pipeline.env || 'prod',
     triggeredBy: randomChoice(TRIGGERED_BY),
     status,
     durationSeconds,
@@ -180,17 +243,9 @@ function generateRandomBuild() {
   return build;
 }
 
-/**
- * Seed initial history for charts & table
- */
 function seedInitialData() {
-  const now = Date.now();
-  const count = 30;
-  for (let i = count - 1; i >= 0; i--) {
-    const build = generateRandomBuild();
-    build.timestamp = new Date(now - i * 5 * 60 * 1000); // every 5 minutes
-    builds.push(build);
-  }
+  // This function is no longer needed as we use real data
+  console.log('Using real API data instead of seeded data');
 }
 
 // -----------------------------
@@ -308,6 +363,7 @@ function renderTable() {
 // -----------------------------
 
 function computeSummary() {
+  // Use real data if available, otherwise use current builds array
   const total = builds.length;
   const successes = builds.filter(b => b.status === STATUS.SUCCESS).length;
   const failures = builds.filter(b => b.status === STATUS.FAIL).length;
@@ -567,13 +623,18 @@ function computeDeploymentOutcomes() {
 
 function computeBuildsPerPipeline() {
   const counts = new Map();
-  PIPELINES.forEach(p => counts.set(p.id, 0));
+  
+  // Use real pipelines if available, otherwise use mock data
+  const availablePipelines = pipelines.length > 0 ? pipelines : PIPELINES;
+  availablePipelines.forEach(p => counts.set(p.id || p._id, 0));
+  
   builds.forEach(b => {
-    counts.set(b.pipelineId, (counts.get(b.pipelineId) || 0) + 1);
+    const pipelineId = b.pipelineId;
+    counts.set(pipelineId, (counts.get(pipelineId) || 0) + 1);
   });
 
-  const labels = PIPELINES.map(p => p.name);
-  const values = PIPELINES.map(p => counts.get(p.id) || 0);
+  const labels = availablePipelines.map(p => p.name);
+  const values = availablePipelines.map(p => counts.get(p.id || p._id) || 0);
   return { labels, counts: values };
 }
 
@@ -626,10 +687,16 @@ function onSearchInput(e) {
 // -----------------------------
 
 function populatePipelineFilter() {
-  PIPELINES.forEach(p => {
+  // Clear existing options except the default
+  el.pipelineFilter.innerHTML = '<option value="all">All Pipelines</option>';
+  
+  // Use real pipelines if available, otherwise use mock data
+  const availablePipelines = pipelines.length > 0 ? pipelines : PIPELINES;
+  
+  availablePipelines.forEach(p => {
     const opt = document.createElement("option");
-    opt.value = p.id;
-    opt.textContent = `${p.name} (${p.env})`;
+    opt.value = p.id || p._id;
+    opt.textContent = `${p.name} (${p.env || 'prod'})`;
     el.pipelineFilter.appendChild(opt);
   });
 }
@@ -641,29 +708,97 @@ function attachEventListeners() {
   el.buildSearch.addEventListener("input", debounce(onSearchInput, 300));
 }
 
-function startRealtimeSimulation() {
-  setInterval(() => {
-    const newBuild = generateRandomBuild();
-    builds.push(newBuild);
+// -----------------------------
+// Real-time Data Updates
+// -----------------------------
 
-   // Limit memory efficiently without recreating array
-while (builds.length > MAX_BUILDS) {
-  builds.shift();
+async function updateDashboardData() {
+  try {
+    // Fetch all data in parallel
+    const [metricsData, buildsData, pipelinesData] = await Promise.all([
+      fetchDashboardMetrics(),
+      fetchRecentBuilds(),
+      fetchPipelines()
+    ]);
+
+    // Update pipelines data
+    if (pipelinesData && pipelinesData.length > 0) {
+      pipelines = transformPipelineData(pipelinesData);
+      populatePipelineFilter();
+    }
+
+    // Update builds data
+    if (buildsData && buildsData.length > 0) {
+      builds = transformBuildData(buildsData);
+    }
+
+    // Update metrics if we have them from the API
+    if (metricsData) {
+      // Update summary cards with real metrics
+      animateCounter(
+        el.totalBuildsCount,
+        metricsData.totalBuilds || 0,
+        600,
+        v => Math.round(v).toLocaleString()
+      );
+
+      animateCounter(
+        el.successfulBuildsCount,
+        metricsData.successfulBuilds || 0,
+        600,
+        v => Math.round(v).toLocaleString()
+      );
+
+      animateCounter(
+        el.failedBuildsCount,
+        metricsData.failedBuilds || 0,
+        600,
+        v => Math.round(v).toLocaleString()
+      );
+
+      animateCounter(
+        el.deploymentRate,
+        metricsData.deploymentSuccessRate || 0,
+        800,
+        v => `${Math.round(v)}%`
+      );
+
+      el.deploymentRateSubtitle.textContent = 
+        `${metricsData.successfulDeployments || 0} / ${metricsData.totalDeployments || 0} deployments`;
+    } else {
+      // Fallback to computed metrics
+      renderSummary();
+    }
+
+    // Update table and charts
+    renderTable();
+    updateCharts();
+    
+  } catch (error) {
+    console.error('Error updating dashboard data:', error);
+    // Fallback to existing data
+    renderSummary();
+    renderTable();
+    updateCharts();
+  }
 }
 
-    renderSummary();
-    updateCharts();
-    renderTable();
-  }, UPDATE_INTERVAL_MS);
+function startRealtimeSimulation() {
+  // Update dashboard every 5 seconds with real data
+  setInterval(updateDashboardData, UPDATE_INTERVAL_MS);
+  
+  // Initial data load
+  updateDashboardData();
 }
 
 function init() {
-  seedInitialData();
-  populatePipelineFilter();
+  // No need to seed initial data as we use real API data
   attachEventListeners();
-  renderSummary();
-  renderTable();
+  
+  // Initialize charts with empty data first
   initCharts();
+  
+  // Start real-time updates
   startRealtimeSimulation();
 }
 
